@@ -1,18 +1,44 @@
+:root {
+  /* Teal & Grey Theme Palette */
+  --theme-teal-dark: #004d40;
+  --theme-teal-medium: #00897b;
+  --theme-teal-light: #4db6ac;
+  --theme-teal-accent: #1de9b6;
+  
+  --theme-grey-darker: #121212;
+  --theme-grey-dark: #1e1e1e;
+  --theme-grey-medium: #373737;
+  --theme-grey-light: #B0B0B0;
+  --theme-white: #ffffff;
+
+  /* LiveKit Component Overrides */
+  --lk-bg: var(--theme-grey-darker);
+  --lk-bg2: var(--theme-grey-dark);
+  --lk-fg: var(--theme-white);
+  --lk-accent-bg: var(--theme-teal-medium);
+  --lk-accent-fg: var(--theme-white);
+  --lk-control-bg: var(--theme-grey-medium);
+  --lk-control-hover-bg: var(--theme-teal-dark);
+  --lk-control-active-bg: var(--theme-teal-medium);
+  --lk-border-color: rgba(255, 255, 255, 0.1);
+}
+
 * {
   box-sizing: border-box;
 }
 
 html {
   color-scheme: dark;
-  background-color: #111;
+  background-color: var(--theme-grey-darker);
+  color: var(--theme-grey-light);
 }
 
 html,
 body {
-  overflow: hidden;
   width: 100%;
   height: 100%;
   margin: 0px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -21,47 +47,62 @@ body {
 }
 
 .header {
-  max-width: 500px;
-  padding-inline: 2rem;
+  width: 100%;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--theme-grey-dark);
+  border-bottom: 1px solid var(--lk-border-color);
 }
 
-.header > img {
-  display: block;
-  margin: auto;
-  max-width: 100%;
-}
-
-.header > h2 {
-  font-family: 'TWK Everett', sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 1.25rem;
-  line-height: 144%;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
+.header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--theme-teal-accent);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 footer {
   width: 100%;
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  background-color: var(--lk-bg);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--theme-grey-light);
+  background-color: var(--theme-grey-dark);
+  border-top: 1px solid var(--lk-border-color);
+  font-size: 0.875rem;
 }
 
-footer a,
-h2 a {
-  color: #ff6352;
-  text-decoration-color: #a33529;
-  text-underline-offset: 0.125em;
-}
-
-footer a:hover,
-h2 a {
-  text-decoration-color: #ff6352;
-}
-
-h2 a {
+footer a {
+  color: var(--theme-teal-light);
   text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: var(--theme-teal-accent);
+  text-decoration: underline;
+}
+
+/* Custom Button Styles for simplified UI */
+.custom-button {
+  background-color: var(--theme-teal-medium);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.custom-button:hover {
+  background-color: var(--theme-teal-light);
+}
+
+.custom-button:active {
+  transform: scale(0.98);
 }

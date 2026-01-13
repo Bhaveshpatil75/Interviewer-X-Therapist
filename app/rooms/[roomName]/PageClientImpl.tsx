@@ -29,6 +29,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
 import { useLowCPUOptimizer } from '@/lib/usePerfomanceOptimiser';
+import PostMeetFeedback from '../../../components/PostMeetFeedback';
 
 const CONN_DETAILS_ENDPOINT =
   process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details';
@@ -197,8 +198,9 @@ function VideoConferenceComponent(props: {
 
   const lowPowerMode = useLowCPUOptimizer(room);
 
-  const router = useRouter();
-  const handleOnLeave = React.useCallback(() => router.push('/'), [router]);
+  const [isDisconnected, setIsDisconnected] = React.useState(false);
+
+  const handleOnLeave = React.useCallback(() => setIsDisconnected(true), []);
   const handleError = React.useCallback((error: Error) => {
     console.error(error);
     alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
@@ -216,6 +218,14 @@ function VideoConferenceComponent(props: {
     }
   }, [lowPowerMode]);
 
+  if (isDisconnected) {
+    return (
+      <main data-lk-theme="default" style={{ height: '100%', display: 'grid', placeItems: 'center' }}>
+        <PostMeetFeedback />
+      </main>
+    );
+  }
+
   return (
     <div className="lk-room-container">
       <RoomContext.Provider value={room}>
@@ -224,7 +234,6 @@ function VideoConferenceComponent(props: {
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
         />
-        <DebugMode />
         <RecordingIndicator />
       </RoomContext.Provider>
     </div>

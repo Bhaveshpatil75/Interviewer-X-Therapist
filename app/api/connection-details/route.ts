@@ -3,10 +3,12 @@ import { getLiveKitURL } from '@/lib/getLiveKitURL';
 import { ConnectionDetails } from '@/lib/types';
 import { AccessToken, AccessTokenOptions, VideoGrant } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/lib/db';
+import Interview from '@/lib/models/Interview';
 
 const API_KEY = process.env.LIVEKIT_API_KEY;
 const API_SECRET = process.env.LIVEKIT_API_SECRET;
-const LIVEKIT_URL = process.env.LIVEKIT_URL;
+const LIVEKIT_URL = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
 const COOKIE_KEY = 'random-participant-postfix';
 
@@ -45,6 +47,18 @@ export async function GET(request: NextRequest) {
       },
       roomName,
     );
+
+    // Save interview session to MongoDB
+    try {
+      await dbConnect();
+      await Interview.create({
+        participantName: participantName,
+        roomName: roomName,
+      });
+    } catch (dbError) {
+      console.error('Failed to save interview stats:', dbError);
+      // Non-blocking error
+    }
 
     // Return connection details
     const data: ConnectionDetails = {
