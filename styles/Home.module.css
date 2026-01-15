@@ -1,12 +1,11 @@
 .main {
-  position: relative;
-  display: grid;
-  gap: 1rem;
-  justify-content: center;
-  place-content: center;
-  justify-items: center;
-  overflow: auto;
-  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  gap: 2rem;
 }
 
 .tabContainer {
@@ -25,7 +24,7 @@
   border-radius: 0.5rem;
 }
 
-.tabSelect > * {
+.tabSelect>* {
   width: 100%;
 }
 

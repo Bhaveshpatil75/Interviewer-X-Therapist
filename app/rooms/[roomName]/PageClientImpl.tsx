@@ -13,6 +13,8 @@ import {
   PreJoin,
   RoomContext,
   VideoConference,
+  useChat,
+  useRoomContext,
 } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
@@ -25,8 +27,9 @@ import {
   RoomEvent,
   TrackPublishDefaults,
   VideoCaptureOptions,
+  RemoteParticipant,
 } from 'livekit-client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
 import { useLowCPUOptimizer } from '@/lib/usePerfomanceOptimiser';
 import PostMeetFeedback from '../../../components/PostMeetFeedback';
@@ -35,12 +38,117 @@ const CONN_DETAILS_ENDPOINT =
   process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details';
 const SHOW_SETTINGS_MENU = process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU == 'true';
 
+/* Helper: Send logs to server terminal */
+const logToTerminal = async (message: string, level: 'INFO' | 'ERROR' = 'INFO') => {
+  try {
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, level })
+    });
+  } catch (e) {
+    console.error('Failed to log to terminal:', e);
+  }
+};
+
+/* Helper Component to Handle Agent Context via useChat (Function Calls) */
+/* Helper Component to Handle Agent Context via useChat (Function Calls) */
+/* Helper Component to Handle Agent Context via useChat (Function Calls) */
+function AgentContextHandler(props: {
+  context: { jobTitle?: string | null; company?: string | null };
+  participantName: string;
+}) {
+  const room = useRoomContext();
+  const { send } = useChat();
+  // Track if we've sent to specific participants to avoid double-sending on re-renders/race conditions
+  const sentRef = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    if (!room) return;
+
+    // 1. Define Message Function
+    const sendMessage = async (reason: string, targetIdentity: string) => {
+      if (sentRef.current.has(targetIdentity)) {
+        // Already sent, skip logging to reduce noise
+        return;
+      }
+
+      const { jobTitle, company } = props.context;
+      const roleText = jobTitle ? jobTitle : 'this role';
+      const companyText = company ? company : 'your company';
+
+      const msg = `DO NOT REPLY Name: ${props.participantName}. applying for the ${roleText} position at ${companyText}.`;
+
+      try {
+        await logToTerminal(`[AgentContextHandler] Sending chat for ${targetIdentity} (${reason})...`);
+        if (send) {
+          await send(msg);
+          await logToTerminal(`[AgentContextHandler] Chat sent successfully.`);
+          sentRef.current.add(targetIdentity);
+        } else {
+          await logToTerminal(`[AgentContextHandler] 'send' function is missing!`, 'ERROR');
+        }
+      } catch (e: any) {
+        await logToTerminal(`[AgentContextHandler] Failed to send: ${e.message}`, 'ERROR');
+      }
+    };
+
+    // 2. Check & Poll Existing Participants (Robustness Strategy)
+    // We poll every 1s for 15s to catch any race conditions where event listeners miss the join
+    const checkParticipants = () => {
+      if (room.remoteParticipants.size > 0) {
+        room.remoteParticipants.forEach((p) => {
+          if (!sentRef.current.has(p.identity)) {
+            logToTerminal(`[AgentContextHandler] Poller found new participant: ${p.identity}`);
+            sendMessage('PollerDetection', p.identity);
+          }
+        });
+      }
+    };
+
+    // Run immediately
+    checkParticipants();
+
+    // Run interval
+    const interval = setInterval(checkParticipants, 1000);
+
+    // 3. Listen for New Participants (Instant Reaction)
+    const handleParticipantConnected = (participant: RemoteParticipant) => {
+      if (!participant.isLocal) {
+        logToTerminal(`[AgentContextHandler] Event: New participant connected: ${participant.identity}`);
+        // Small delay to ensure they are ready to receive
+        setTimeout(() => sendMessage('NewParticipantEvent', participant.identity), 1000);
+      }
+    };
+
+    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+
+    // Stop polling after 20 seconds to save resources
+    const stopPollingTimer = setTimeout(() => {
+      clearInterval(interval);
+      logToTerminal('[AgentContextHandler] Stopped polling.');
+    }, 20000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(stopPollingTimer);
+      room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    };
+  }, [room, send, props.context, props.participantName]);
+
+  return null;
+}
+
 export function PageClientImpl(props: {
   roomName: string;
   region?: string;
   hq: boolean;
   codec: VideoCodec;
 }) {
+  const searchParams = useSearchParams();
+  const jobTitle = searchParams?.get('jobTitle');
+  const company = searchParams?.get('company');
+
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
   );
@@ -63,20 +171,29 @@ export function PageClientImpl(props: {
     if (props.region) {
       url.searchParams.append('region', props.region);
     }
+    const jobTitle = searchParams?.get('jobTitle');
+    const company = searchParams?.get('company');
+    if (jobTitle) url.searchParams.append('jobTitle', jobTitle);
+    if (company) url.searchParams.append('company', company);
+
     const connectionDetailsResp = await fetch(url.toString());
     const connectionDetailsData = await connectionDetailsResp.json();
     setConnectionDetails(connectionDetailsData);
-  }, []);
+  }, [props.roomName, props.region, searchParams]);
   const handlePreJoinError = React.useCallback((e: any) => console.error(e), []);
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
       {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
+        <div style={{ display: 'grid', placeItems: 'center', height: '100%', alignContent: 'center' }}>
+          <div style={{ marginBottom: '20px', textAlign: 'center', color: 'white', maxWidth: '400px', fontWeight: 'bold', fontSize: '1.2rem' }}>
+            <p>Please note: You may need to wait for a minute before the interview starts.</p>
+          </div>
           <PreJoin
             defaults={preJoinDefaults}
             onSubmit={handlePreJoinSubmit}
             onError={handlePreJoinError}
+            joinLabel="Join"
           />
         </div>
       ) : (
@@ -84,6 +201,7 @@ export function PageClientImpl(props: {
           connectionDetails={connectionDetails}
           userChoices={preJoinChoices}
           options={{ codec: props.codec, hq: props.hq }}
+          context={{ jobTitle, company }}
         />
       )}
     </main>
@@ -97,10 +215,14 @@ function VideoConferenceComponent(props: {
     hq: boolean;
     codec: VideoCodec;
   };
+  context: {
+    jobTitle?: string | null;
+    company?: string | null;
+  };
 }) {
-  const keyProvider = new ExternalE2EEKeyProvider();
   const { worker, e2eePassphrase } = useSetupE2EE();
   const e2eeEnabled = !!(e2eePassphrase && worker);
+  const keyProvider = new ExternalE2EEKeyProvider();
 
   const [e2eeSetupComplete, setE2eeSetupComplete] = React.useState(false);
 
@@ -138,7 +260,7 @@ function VideoConferenceComponent(props: {
   React.useEffect(() => {
     if (e2eeEnabled) {
       keyProvider
-        .setKey(decodePassphrase(e2eePassphrase))
+        .setKey(decodePassphrase(e2eePassphrase!))
         .then(() => {
           room.setE2EEEnabled(true).catch((e) => {
             if (e instanceof DeviceUnsupportedError) {
@@ -163,6 +285,19 @@ function VideoConferenceComponent(props: {
     };
   }, []);
 
+  const [isDisconnected, setIsDisconnected] = React.useState(false);
+  const handleOnLeave = React.useCallback(() => setIsDisconnected(true), []);
+  const handleError = React.useCallback((error: Error) => {
+    console.error(error);
+    alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
+  }, []);
+  const handleEncryptionError = React.useCallback((error: Error) => {
+    console.error(error);
+    alert(
+      `Encountered an unexpected encryption error, check the console logs for details: ${error.message}`,
+    );
+  }, []);
+
   React.useEffect(() => {
     room.on(RoomEvent.Disconnected, handleOnLeave);
     room.on(RoomEvent.EncryptionError, handleEncryptionError);
@@ -179,14 +314,10 @@ function VideoConferenceComponent(props: {
           handleError(error);
         });
       if (props.userChoices.videoEnabled) {
-        room.localParticipant.setCameraEnabled(true).catch((error) => {
-          handleError(error);
-        });
+        room.localParticipant.setCameraEnabled(true).catch((error) => handleError(error));
       }
       if (props.userChoices.audioEnabled) {
-        room.localParticipant.setMicrophoneEnabled(true).catch((error) => {
-          handleError(error);
-        });
+        room.localParticipant.setMicrophoneEnabled(true).catch((error) => handleError(error));
       }
     }
     return () => {
@@ -194,23 +325,9 @@ function VideoConferenceComponent(props: {
       room.off(RoomEvent.EncryptionError, handleEncryptionError);
       room.off(RoomEvent.MediaDevicesError, handleError);
     };
-  }, [e2eeSetupComplete, room, props.connectionDetails, props.userChoices]);
+  }, [e2eeSetupComplete, room, props.connectionDetails, props.userChoices, handleOnLeave, handleError, handleEncryptionError]); // Added deps
 
   const lowPowerMode = useLowCPUOptimizer(room);
-
-  const [isDisconnected, setIsDisconnected] = React.useState(false);
-
-  const handleOnLeave = React.useCallback(() => setIsDisconnected(true), []);
-  const handleError = React.useCallback((error: Error) => {
-    console.error(error);
-    alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
-  }, []);
-  const handleEncryptionError = React.useCallback((error: Error) => {
-    console.error(error);
-    alert(
-      `Encountered an unexpected encryption error, check the console logs for details: ${error.message}`,
-    );
-  }, []);
 
   React.useEffect(() => {
     if (lowPowerMode) {
@@ -233,6 +350,21 @@ function VideoConferenceComponent(props: {
         <VideoConference
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
+        >
+          {/* Note: AgentContextHandler cannot simply be a child of VideoConference unless VideoConference supports children rendering.
+                 Standard LiveKit VideoConference does support children as overlays or standard layout modifications? 
+                 Actually, VideoConference is often a self-contained layout.
+                 If it doesn't render children, this Handler won't run.
+                 However, AgentContextHandler returns 'null', so it just needs to be MOUNTED.
+                 If VideoConference doesn't yield children, we must place it OUTSIDE but inside RoomContext.Provider.
+                 BUT `useChat` hook requires to be inside `ChatContext`?
+                 `useChat` docs say: "If you use useChat outside of a ChatContext it will create a new one based on the room context"
+                 So it SHOULD work here.
+             */}
+        </VideoConference>
+        <AgentContextHandler
+          context={props.context}
+          participantName={props.connectionDetails.participantName}
         />
         <RecordingIndicator />
       </RoomContext.Provider>

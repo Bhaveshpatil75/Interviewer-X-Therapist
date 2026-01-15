@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 export interface IInterview extends mongoose.Document {
     participantName: string;
     roomName: string;
+    jobTitle?: string;
+    company?: string;
     joinedAt: Date;
 }
 
@@ -14,6 +16,14 @@ const InterviewSchema = new mongoose.Schema<IInterview>({
     roomName: {
         type: String,
         required: true,
+    },
+    jobTitle: {
+        type: String,
+        required: false,
+    },
+    company: {
+        type: String,
+        required: false,
     },
     joinedAt: {
         type: Date,

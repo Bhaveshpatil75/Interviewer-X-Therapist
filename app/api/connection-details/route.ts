@@ -15,9 +15,24 @@ const COOKIE_KEY = 'random-participant-postfix';
 export async function GET(request: NextRequest) {
   try {
     // Parse query parameters
-    const roomName = request.nextUrl.searchParams.get('roomName');
-    const participantName = request.nextUrl.searchParams.get('participantName');
-    const metadata = request.nextUrl.searchParams.get('metadata') ?? '';
+    const searchParams = request.nextUrl.searchParams;
+    const participantName = searchParams.get('participantName') || 'Guest';
+    const jobTitle = searchParams.get('jobTitle');
+    const company = searchParams.get('company');
+
+    console.log('------------------------------------------------');
+    console.log('📞 Connection Request Received');
+    console.log(`👤 Name: ${participantName}`);
+    console.log(`💼 Job: ${jobTitle || 'N/A'}`);
+    console.log(`🏢 Company: ${company || 'N/A'}`);
+    console.log('------------------------------------------------');
+
+    const roomName = searchParams.get('roomName') || 'default-room';
+    // Metadata can include the job/company info for the agent
+    const providedMetadata = searchParams.get('metadata') ?? '';
+    const metadataObj = { jobTitle, company, extra: providedMetadata };
+    const metadata = JSON.stringify(metadataObj);
+
     const region = request.nextUrl.searchParams.get('region');
     if (!LIVEKIT_URL) {
       throw new Error('LIVEKIT_URL is not defined');
@@ -54,6 +69,8 @@ export async function GET(request: NextRequest) {
       await Interview.create({
         participantName: participantName,
         roomName: roomName,
+        jobTitle: jobTitle,
+        company: company,
       });
     } catch (dbError) {
       console.error('Failed to save interview stats:', dbError);
