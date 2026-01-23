@@ -47,7 +47,7 @@ function CandidateForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            placeholder="e.g. John Doe"
+            placeholder="e.g. Anika"
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>
@@ -58,7 +58,7 @@ function CandidateForm() {
             type="text"
             value={jobTitle}
             onChange={(e) => setJobTitle(e.target.value)}
-            placeholder="e.g. Senior Developer"
+            placeholder="e.g. HOD Crime Analytics"
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>
@@ -69,7 +69,7 @@ function CandidateForm() {
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            placeholder="e.g. Tech Corp"
+            placeholder="e.g. Vought International"
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>

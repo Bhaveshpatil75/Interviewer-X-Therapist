@@ -28,6 +28,7 @@ import {
   TrackPublishDefaults,
   VideoCaptureOptions,
   RemoteParticipant,
+  ParticipantEvent,
 } from 'livekit-client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
@@ -66,73 +67,77 @@ function AgentContextHandler(props: {
   React.useEffect(() => {
     if (!room) return;
 
+    // Helper to force name override
+    const enforceAgentName = (p: RemoteParticipant) => {
+      // Logic: If it's a remote participant (agent), force name to Anika
+      if (p.name !== 'Anika') {
+        console.log(`[AgentContextHandler] Enforcing name 'Anika' for ${p.identity} (was '${p.name}')`);
+        // Direct assignment to override metadata reflection
+        (p as any).name = 'Anika';
+
+        // Force the UI to re-render with the new name
+        // Use the enum and pass BOTH match name and participant to be safe for all listener types
+        p.emit(ParticipantEvent.ParticipantNameChanged, 'Anika');
+
+        // Also try emitting the string literal just in case
+        // p.emit('participantNameChanged', 'Anika', p);
+      }
+    };
+
     // 1. Define Message Function
     const sendMessage = async (reason: string, targetIdentity: string) => {
       if (sentRef.current.has(targetIdentity)) {
-        // Already sent, skip logging to reduce noise
         return;
       }
 
-      const { jobTitle, company } = props.context;
-      const roleText = jobTitle ? jobTitle : 'this role';
-      const companyText = company ? company : 'your company';
-
-      const msg = `DO NOT REPLY Name: ${props.participantName}. applying for the ${roleText} position at ${companyText}.`;
-
+      // CHAT DISABLED AS PER USER REQUEST
       try {
-        await logToTerminal(`[AgentContextHandler] Sending chat for ${targetIdentity} (${reason})...`);
-        if (send) {
-          await send(msg);
-          await logToTerminal(`[AgentContextHandler] Chat sent successfully.`);
-          sentRef.current.add(targetIdentity);
-        } else {
-          await logToTerminal(`[AgentContextHandler] 'send' function is missing!`, 'ERROR');
-        }
+        await logToTerminal(`[AgentContextHandler] Chat disabled. Skipping send for ${targetIdentity} (${reason}).`);
       } catch (e: any) {
-        await logToTerminal(`[AgentContextHandler] Failed to send: ${e.message}`, 'ERROR');
+        // ignore
       }
     };
 
-    // 2. Check & Poll Existing Participants (Robustness Strategy)
-    // We poll every 1s for 15s to catch any race conditions where event listeners miss the join
-    const checkParticipants = () => {
-      if (room.remoteParticipants.size > 0) {
-        room.remoteParticipants.forEach((p) => {
-          if (!sentRef.current.has(p.identity)) {
-            logToTerminal(`[AgentContextHandler] Poller found new participant: ${p.identity}`);
-            sendMessage('PollerDetection', p.identity);
-          }
-        });
+    // 2. Handle Existing Participants
+    room.remoteParticipants.forEach((p) => {
+      enforceAgentName(p);
+      if (!sentRef.current.has(p.identity)) {
+        logToTerminal(`[AgentContextHandler] Found existing participant: ${p.identity}`);
+        sendMessage('ExistingParticipant', p.identity);
       }
-    };
+    });
 
-    // Run immediately
-    checkParticipants();
-
-    // Run interval
-    const interval = setInterval(checkParticipants, 1000);
-
-    // 3. Listen for New Participants (Instant Reaction)
+    // 3. Listen for New Participants
     const handleParticipantConnected = (participant: RemoteParticipant) => {
       if (!participant.isLocal) {
+        enforceAgentName(participant);
         logToTerminal(`[AgentContextHandler] Event: New participant connected: ${participant.identity}`);
         // Small delay to ensure they are ready to receive
         setTimeout(() => sendMessage('NewParticipantEvent', participant.identity), 1000);
       }
     };
 
-    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    // 4. Enforce Name on Updates (Anti-Flicker/Persistent)
+    const handleParticipantNameChanged = (arg1: any, arg2: any) => {
+      // Identify participant arg (could be 1st or 2nd)
+      let p: RemoteParticipant | undefined;
+      if (arg1 && (arg1 as RemoteParticipant).isLocal !== undefined) p = arg1;
+      else if (arg2 && (arg2 as RemoteParticipant).isLocal !== undefined) p = arg2;
 
-    // Stop polling after 20 seconds to save resources
-    const stopPollingTimer = setTimeout(() => {
-      clearInterval(interval);
-      logToTerminal('[AgentContextHandler] Stopped polling.');
-    }, 20000);
+      // Check if it is a remote participant
+      if (p && !p.isLocal) {
+        enforceAgentName(p);
+      }
+    };
+
+    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    // Note: RoomEvent.ParticipantNameChanged usually passes the participant as argument.
+    // If not, we might need to check args. Assuming standard LiveKit behavior.
+    room.on(RoomEvent.ParticipantNameChanged, handleParticipantNameChanged);
 
     return () => {
-      clearInterval(interval);
-      clearTimeout(stopPollingTimer);
       room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
+      room.off(RoomEvent.ParticipantNameChanged, handleParticipantNameChanged);
     };
   }, [room, send, props.context, props.participantName]);
 
