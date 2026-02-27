@@ -66,11 +66,13 @@ export async function GET(request: NextRequest) {
     // Save interview session to MongoDB
     try {
       await dbConnect();
+      const appMode = process.env.NEXT_PUBLIC_APP_MODE === 'therapist' ? 'therapy' : 'interview';
       await Interview.create({
         participantName: participantName,
         roomName: roomName,
         jobTitle: jobTitle,
         company: company,
+        event: appMode,
       });
     } catch (dbError) {
       console.error('Failed to save interview stats:', dbError);

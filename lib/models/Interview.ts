@@ -5,6 +5,7 @@ export interface IInterview extends mongoose.Document {
     roomName: string;
     jobTitle?: string;
     company?: string;
+    event?: string;
     joinedAt: Date;
 }
 
@@ -22,6 +23,10 @@ const InterviewSchema = new mongoose.Schema<IInterview>({
         required: false,
     },
     company: {
+        type: String,
+        required: false,
+    },
+    event: {
         type: String,
         required: false,
     },

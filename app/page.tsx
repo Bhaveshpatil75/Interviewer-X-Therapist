@@ -1,11 +1,11 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { generateRoomId } from '@/lib/client-utils';
 import styles from '../styles/Home.module.css';
 
-function CandidateForm() {
+function CandidateForm({ isTherapist }: { isTherapist: boolean }) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -21,7 +21,7 @@ function CandidateForm() {
     params.set('jobTitle', jobTitle.trim() || 'N/A');
     params.set('company', company.trim() || 'N/A');
 
-    console.log('Starting interview with params:', params.toString());
+    console.log('Starting session with params:', params.toString());
 
     const roomId = generateRoomId();
     router.push(`/rooms/${roomId}?${params.toString()}`);
@@ -31,12 +31,12 @@ function CandidateForm() {
     <div className={styles.tabContent} style={{ maxWidth: '500px', width: '100%', textAlign: 'left' }}>
       <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-          AI Interviewer
+          {isTherapist ? 'AI Therapist' : 'AI Interviewer'}
         </h2>
         <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
       <p style={{ opacity: 0.9, textAlign: 'center', marginBottom: '1.5rem', fontWeight: 'bold', color: 'white' }}>
-        Please enter your details to start the interview.
+        {isTherapist ? 'Please enter your details to start the session.' : 'Please enter your details to start the interview.'}
       </p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -53,36 +53,40 @@ function CandidateForm() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Job Role (Optional)</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+            {isTherapist ? "What's on your mind? (Optional)" : "Job Role (Optional)"}
+          </label>
           <input
             type="text"
             value={jobTitle}
             onChange={(e) => setJobTitle(e.target.value)}
-            placeholder="e.g. HOD Crime Analytics"
+            placeholder={isTherapist ? "e.g. Feeling anxious lately" : "e.g. HOD Crime Analytics"}
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Company (Optional)</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+            {isTherapist ? "Any specific goals? (Optional)" : "Company (Optional)"}
+          </label>
           <input
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            placeholder="e.g. Vought International"
+            placeholder={isTherapist ? "e.g. Manage stress better" : "e.g. Vought International"}
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>
 
         <button type="submit" className="custom-button" style={{ marginTop: '1rem' }}>
-          Start Interview
+          {isTherapist ? 'Start Session' : 'Start Interview'}
         </button>
       </form>
     </div>
   );
 }
 
-function JoinMeeting() {
+function JoinMeeting({ isTherapist }: { isTherapist: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -96,32 +100,32 @@ function JoinMeeting() {
     <div className={styles.tabContent} style={{ alignItems: 'center', textAlign: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-          AI Interviewer
+          {isTherapist ? 'AI Therapist' : 'AI Interviewer'}
         </h2>
         <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
       <p style={{ margin: 0, opacity: 0.9 }}>
-        Click below to join your interview session.
+        Click below to join your {isTherapist ? 'session' : 'interview'}.
       </p>
       <button
         style={{ marginTop: '1.5rem', width: '100%', maxWidth: '300px' }}
         className="custom-button"
         onClick={startMeeting}
       >
-        Join Interview
+        {isTherapist ? 'Join Session' : 'Join Interview'}
       </button>
     </div>
   );
 }
 
-function PageContent() {
+function PageContent({ isTherapist }: { isTherapist: boolean }) {
   const searchParams = useSearchParams();
   const hasParticipantName = searchParams?.has('participantName');
 
-  return hasParticipantName ? <JoinMeeting /> : <CandidateForm />;
+  return hasParticipantName ? <JoinMeeting isTherapist={isTherapist} /> : <CandidateForm isTherapist={isTherapist} />;
 }
 
-const features = [
+const interviewerFeatures = [
   { title: '🤖 AI-Based Interview', desc: 'Intelligent interaction with context-aware AI agents.' },
   { title: '🎙️ Real-Time Voice', desc: 'Seamless, low-latency voice communication.' },
   { title: '📹 Video Enabled', desc: 'Full HD video support for immersive meetings.' },
@@ -130,7 +134,16 @@ const features = [
   { title: '🎯 Customized to Role', desc: 'Interviews tailored to your specific Job Role & Company.' },
 ];
 
-function FeatureColumn({ items }: { items: typeof features }) {
+const therapistFeatures = [
+  { title: '🧠 AI-Based Therapy', desc: 'Compassionate interaction with a context-aware AI therapist.' },
+  { title: '🎙️ Real-Time Voice', desc: 'Seamless, low-latency voice communication.' },
+  { title: '📹 Video Enabled', desc: 'Full HD video support for immersive sessions.' },
+  { title: '🔒 Private & Secure', desc: 'Your sessions are completely private and confidential.' },
+  { title: '💬 Interactive Chat', desc: 'Integrated chat for text-based expression.' },
+  { title: '🎯 Personalized Care', desc: 'Therapy tailored to your specific needs and challenges.' },
+];
+
+function FeatureColumn({ items }: { items: typeof interviewerFeatures }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1, minWidth: '280px' }}>
       {items.map((f, i) => (
@@ -175,6 +188,13 @@ function ContactInfo() {
 }
 
 export default function Page() {
+  const [isTherapist, setIsTherapist] = useState(false);
+
+  useEffect(() => {
+    setIsTherapist(process.env.NEXT_PUBLIC_APP_MODE === 'therapist');
+  }, []);
+
+  const features = isTherapist ? therapistFeatures : interviewerFeatures;
   const leftFeatures = features.slice(0, 3);
   const rightFeatures = features.slice(3, 6);
 
@@ -199,7 +219,7 @@ export default function Page() {
         <div style={{ flex: '0 1 500px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
           <Suspense fallback={<div className={styles.tabContent}>Loading...</div>}>
-            <PageContent />
+            <PageContent isTherapist={isTherapist} />
           </Suspense>
 
           <ContactInfo />
@@ -213,3 +233,4 @@ export default function Page() {
     </main>
   );
 }
+

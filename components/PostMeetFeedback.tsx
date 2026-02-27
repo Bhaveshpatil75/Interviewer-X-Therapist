@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import styles from '../styles/Home.module.css';
 
 export default function PostMeetFeedback() {
+    const isTherapist = process.env.NEXT_PUBLIC_APP_MODE === 'therapist';
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
     const [submitted, setSubmitted] = useState(false);
@@ -44,7 +45,7 @@ export default function PostMeetFeedback() {
 
     return (
         <div className={styles.tabContent} style={{ maxWidth: '600px', width: '100%' }}>
-            <h2 style={{ color: 'var(--theme-teal-accent)', marginTop: 0 }}>Your interview is over.</h2>
+            <h2 style={{ color: 'var(--theme-teal-accent)', marginTop: 0 }}>Your {isTherapist ? 'session' : 'interview'} is over.</h2>
             <p>We will contact you for further updates. You can close this window now.</p>
 
             <div style={{ marginBlock: '1rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>

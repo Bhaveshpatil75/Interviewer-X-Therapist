@@ -69,18 +69,25 @@ function AgentContextHandler(props: {
 
     // Helper to force name override
     const enforceAgentName = (p: RemoteParticipant) => {
-      // Logic: If it's a remote participant (agent), force name to Anika
-      if (p.name !== 'Anika') {
-        console.log(`[AgentContextHandler] Enforcing name 'Anika' for ${p.identity} (was '${p.name}')`);
-        // Direct assignment to override metadata reflection
-        (p as any).name = 'Anika';
+      // Logic: If it's a remote participant (agent), force name
+      const isTherapist = process.env.NEXT_PUBLIC_APP_MODE === 'therapist';
+      const expectedName = isTherapist ? 'Dr. Hannibal Lecter' : 'Anika';
+      if (p.name !== expectedName) {
+        console.log(`[AgentContextHandler] Enforcing name '${expectedName}' for ${p.identity} (was '${p.name}')`);
+
+        // Use Object.defineProperty to override the getter so it always returns the expected name
+        Object.defineProperty(p, 'name', {
+          get: () => expectedName,
+          set: (val) => {
+            // Ignore any attempts by the LiveKit SDK to revert the name
+            console.log(`[AgentContextHandler] Ignored attempt to set name to '${val}'`);
+          },
+          configurable: true,
+          enumerable: true,
+        });
 
         // Force the UI to re-render with the new name
-        // Use the enum and pass BOTH match name and participant to be safe for all listener types
-        p.emit(ParticipantEvent.ParticipantNameChanged, 'Anika');
-
-        // Also try emitting the string literal just in case
-        // p.emit('participantNameChanged', 'Anika', p);
+        p.emit(ParticipantEvent.ParticipantNameChanged, expectedName);
       }
     };
 
@@ -192,7 +199,7 @@ export function PageClientImpl(props: {
       {connectionDetails === undefined || preJoinChoices === undefined ? (
         <div style={{ display: 'grid', placeItems: 'center', height: '100%', alignContent: 'center' }}>
           <div style={{ marginBottom: '20px', textAlign: 'center', color: 'white', maxWidth: '400px', fontWeight: 'bold', fontSize: '1.2rem' }}>
-            <p>Please note: You may need to wait for a minute before the interview starts.</p>
+            <p>Please note: You may need to wait for a minute before the {process.env.NEXT_PUBLIC_APP_MODE === 'therapist' ? 'session' : 'interview'} starts.</p>
           </div>
           <PreJoin
             defaults={preJoinDefaults}
@@ -348,8 +355,21 @@ function VideoConferenceComponent(props: {
     );
   }
 
+  const isTherapist = process.env.NEXT_PUBLIC_APP_MODE === 'therapist';
+  const expectedName = isTherapist ? 'Dr. Hannibal Lecter' : 'Anika';
+
   return (
     <div className="lk-room-container">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .lk-participant-tile[data-lk-local-participant="false"] .lk-participant-name {
+          font-size: 0px;
+        }
+        .lk-participant-tile[data-lk-local-participant="false"] .lk-participant-name::after {
+          content: "${expectedName}";
+          font-size: 15px;
+        }
+      `}} />
       <RoomContext.Provider value={room}>
         <KeyboardShortcuts />
         <VideoConference
