@@ -31,7 +31,7 @@ function CandidateForm({ isTherapist }: { isTherapist: boolean }) {
     <div className={styles.tabContent} style={{ maxWidth: '500px', width: '100%', textAlign: 'left' }}>
       <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-          {isTherapist ? 'AI Therapist' : 'AI Interviewer'}
+          {isTherapist ? 'Dr. Hannibal Lecter (Therapist)' : 'Anika (Interviewer)'}
         </h2>
         <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
@@ -47,7 +47,7 @@ function CandidateForm({ isTherapist }: { isTherapist: boolean }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            placeholder="e.g. Anika"
+            placeholder="e.g. John"
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--lk-border-color)', background: 'var(--theme-grey-darker)', color: 'white' }}
           />
         </div>
@@ -100,7 +100,7 @@ function JoinMeeting({ isTherapist }: { isTherapist: boolean }) {
     <div className={styles.tabContent} style={{ alignItems: 'center', textAlign: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-          {isTherapist ? 'AI Therapist' : 'AI Interviewer'}
+          {isTherapist ? 'Dr. Hannibal Lecter (AI Therapist)' : 'Anika (AI Interviewer)'}
         </h2>
         <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
