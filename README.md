@@ -1,42 +1,17 @@
-<a href="https://livekit.io/">
-  <img src="./.github/assets/livekit-mark.png" alt="LiveKit logo" width="100" height="100">
-</a>
 
-# LiveKit Meet
+# Interviewer & Therapist App
 
-<p>
-  <a href="https://meet.livekit.io"><strong>Try the demo</strong></a>
-  •
-  <a href="https://github.com/livekit/components-js">LiveKit Components</a>
-  •
-  <a href="https://docs.livekit.io/">LiveKit Docs</a>
-  •
-  <a href="https://livekit.io/cloud">LiveKit Cloud</a>
-  •
-  <a href="https://blog.livekit.io/">Blog</a>
-</p>
+### Special Thanks : https://github.com/livekit-examples/meet
 
-<br>
+## Features
 
-LiveKit Meet is an open source video conferencing app built on [LiveKit Components](https://github.com/livekit/components-js), [LiveKit Cloud](https://cloud.livekit.io/), and Next.js. It's been completely redesigned from the ground up using our new components library.
+The app provides two distinct functionalities, driven by specialized AI agents:
 
-![LiveKit Meet screenshot](./.github/assets/livekit-meet.jpg)
+- **[Interviewer (Anika)](https://anika-by-bhaveshpatil75.vercel.app)**: Experience realistic mock interviews and get career guidance from our AI Interviewer, Anika.
+- **[Therapist (Dr. Hannibal Lecter)](https://hannibal-by-bhaveshpatil75.vercel.app/)**: Engage in insightful, calm conversations and therapy sessions with our AI Therapist, Dr. Hannibal Lecter.
 
-## Tech Stack
+## Technologies Used
 
-- This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-- App is built with [@livekit/components-react](https://github.com/livekit/components-js/) library.
-
-## Demo
-
-Give it a try at https://meet.livekit.io.
-
-## Dev Setup
-
-Steps to get a local dev setup up and running:
-
-1. Run `pnpm install` to install all dependencies.
-2. Copy `.env.example` in the project root and rename it to `.env.local`.
-3. Update the missing environment variables in the newly created `.env.local` file.
-4. Run `pnpm dev` to start the development server and visit [http://localhost:3000](http://localhost:3000) to see the result.
-5. Start development 🎉
+- **Next.js**: The core framework used for building the application.
+- **LiveKit**: Real-time audio and video, powered by the [@livekit/components-react](https://github.com/livekit/components-js/) library.
+- **AI Agents**: Built using the LiveKit Agent framework to power the interactive personas.
