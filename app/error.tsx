@@ -49,21 +49,7 @@ export default function Error({
                 Try again
             </button>
 
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', width: '100%', maxWidth: '400px' }}>
-                <p style={{ fontWeight: 'bold', marginBottom: '1rem' }}>Report this issue to:</p>
-                <p style={{ margin: '0.5rem 0' }}>Bhavesh Patil</p>
-                <p style={{ margin: '0.5rem 0' }}>
-                    <a href="mailto:bhaveshpatil7504@gmail.com" style={{ color: '#4db6ac', textDecoration: 'none' }}>
-                        bhaveshpatil7504@gmail.com
-                    </a>
-                </p>
-                <p style={{ margin: '0.5rem 0' }}>+91 7498503673</p>
-                <p style={{ marginTop: '1rem' }}>
-                    <a href="https://github.com/Bhaveshpatil75" target="_blank" rel="noopener noreferrer" style={{ color: '#1de9b6' }}>
-                        Visit GitHub profile
-                    </a>
-                </p>
-            </div>
+
         </div>
     );
 }
