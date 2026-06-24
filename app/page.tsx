@@ -33,6 +33,7 @@ function CandidateForm({ isTherapist }: { isTherapist: boolean }) {
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
           {isTherapist ? 'Dr. Hannibal Lecter (Therapist)' : 'Anika (Interviewer)'}
         </h2>
+        <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
       <p style={{ opacity: 0.9, textAlign: 'center', marginBottom: '1.5rem', fontWeight: 'bold', color: 'white' }}>
         {isTherapist ? 'Please enter your details to start the session.' : 'Please enter your details to start the interview.'}
@@ -101,6 +102,7 @@ function JoinMeeting({ isTherapist }: { isTherapist: boolean }) {
         <h2 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #00d2ff, #3a7bd5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
           {isTherapist ? 'Dr. Hannibal Lecter (AI Therapist)' : 'Anika (AI Interviewer)'}
         </h2>
+        <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.25rem' }}>by Bhavesh Patil</div>
       </div>
       <p style={{ margin: 0, opacity: 0.9 }}>
         Click below to join your {isTherapist ? 'session' : 'interview'}.
@@ -166,7 +168,24 @@ function FeatureColumn({ items }: { items: typeof interviewerFeatures }) {
   );
 }
 
+function ContactInfo() {
+  return (
+    <div style={{ marginTop: '2rem', textAlign: 'center', padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', width: '100%', maxWidth: '500px', fontSize: '0.9rem' }}>
 
+      <p style={{ margin: '0.5rem 0' }}>
+        Email: <a href="mailto:bhaveshpatil7504@gmail.com" style={{ color: 'var(--theme-teal-light)', textDecoration: 'none' }}>bhaveshpatil7504@gmail.com</a>
+      </p>
+      <p style={{ margin: '0.5rem 0' }}>
+        Mob: +91 7498503673
+      </p>
+      <p style={{ margin: '0.5rem 0' }}>
+        <a href="https://github.com/Bhaveshpatil75" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-teal-accent)', textDecoration: 'none' }}>
+          Visit my GitHub
+        </a>
+      </p>
+    </div>
+  )
+}
 
 export default function Page() {
   const [isTherapist, setIsTherapist] = useState(false);
@@ -203,7 +222,7 @@ export default function Page() {
             <PageContent isTherapist={isTherapist} />
           </Suspense>
 
-
+          <ContactInfo />
         </div>
 
         {/* Right Column */}

@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: isTherapist ? 'AI Therapist' : 'AI Interviewer',
+      default: isTherapist ? 'AI Therapist by BP75' : 'AI Interviewer by BP75',
       template: '%s',
     },
     description: isTherapist ? 'Real-time AI Therapy Application.' : 'Real-time AI Interview Application.',
@@ -28,7 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
           type: 'image/png',
         },
       ],
-      siteName: isTherapist ? 'AI Therapist' : 'AI Interviewer',
+      siteName: isTherapist ? 'AI Therapist by BP75' : 'AI Interviewer by BP75',
+    },
+    icons: {
+      icon: '/bp75.png',
+      apple: '/bp75.png',
     },
   };
 }

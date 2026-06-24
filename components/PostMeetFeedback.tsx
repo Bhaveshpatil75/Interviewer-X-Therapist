@@ -36,7 +36,7 @@ export default function PostMeetFeedback() {
         return (
             <div className={styles.tabContent} style={{ textAlign: 'center', maxWidth: '500px' }}>
                 <h2 style={{ color: 'var(--theme-teal-accent)' }}>Thank you!</h2>
-                <p>We appreciate your kind words.</p>
+                <p>Bhavesh will appreciate your kind words.</p>
                 <p>We will contact you for further updates.</p>
                 <p>You can close this window now.</p>
             </div>
@@ -50,7 +50,7 @@ export default function PostMeetFeedback() {
 
             <div style={{ marginBlock: '1rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
                 <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>Feedback</h3>
-                <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>We would appreciate a word from you.</p>
+                <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Bhavesh would appreciate a word from you.</p>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <input
@@ -88,6 +88,22 @@ export default function PostMeetFeedback() {
                 </form>
             </div>
 
+            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--lk-border-color)', paddingTop: '1rem', fontSize: '0.9rem' }}>
+                <p style={{ margin: '0.5rem 0' }}>
+                    Developed by <strong>Bhavesh Patil</strong>
+                </p>
+                <p style={{ margin: '0.5rem 0' }}>
+                    <a href="https://github.com/Bhaveshpatil75" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-teal-accent)' }}>
+                        Visit my GitHub
+                    </a>
+                </p>
+                <p style={{ margin: '0.5rem 0' }}>
+                    Email: <a href="mailto:bhaveshpatil7504@gmail.com" style={{ color: 'var(--theme-teal-light)' }}>bhaveshpatil7504@gmail.com</a>
+                </p>
+                <p style={{ margin: '0.5rem 0' }}>
+                    Mob: +91 7498503673
+                </p>
+            </div>
         </div>
     );
 }
